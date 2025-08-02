@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Cool-toned comic theme */
+    --background: 240 100% 99%;
+    --foreground: 217 32% 17%;
+    --card: 240 100% 98%;
+    --card-foreground: 217 32% 17%;
+    --popover: 240 100% 98%;
+    --popover-foreground: 217 32% 17%;
+    --primary: 214 88% 50%;
+    --primary-foreground: 240 100% 99%;
+    --secondary: 195 100% 90%;
+    --secondary-foreground: 217 32% 17%;
+    --muted: 195 100% 95%;
+    --muted-foreground: 217 15% 55%;
+    --accent: 194 100% 85%;
+    --accent-foreground: 217 32% 17%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 240 100% 99%;
+    --border: 195 100% 88%;
+    --input: 195 100% 92%;
+    --ring: 214 88% 50%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 217 33% 8%;
+    --foreground: 195 100% 95%;
+    --card: 217 33% 10%;
+    --card-foreground: 195 100% 95%;
+    --popover: 217 33% 10%;
+    --popover-foreground: 195 100% 95%;
+    --primary: 194 100% 70%;
+    --primary-foreground: 217 33% 8%;
+    --secondary: 217 25% 15%;
+    --secondary-foreground: 195 100% 95%;
+    --muted: 217 25% 15%;
+    --muted-foreground: 195 50% 70%;
+    --accent: 217 25% 18%;
+    --accent-foreground: 195 100% 95%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 195 100% 95%;
+    --border: 217 25% 15%;
+    --input: 217 25% 15%;
+    --ring: 194 100% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Comic Neue', 'Arial', sans-serif;
+  }
+}
+
+@layer components {
+  .comic-card {
+    @apply bg-card border-2 border-black rounded-comic shadow-comic transition-all duration-200 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.8)];
+  }
+  
+  .comic-button {
+    @apply bg-primary text-primary-foreground border-2 border-black rounded-comic shadow-comic font-bold uppercase tracking-wide transition-all duration-200 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.8)];
+  }
+  
+  .bubble-card {
+    @apply bg-card rounded-bubble shadow-bubble border border-cool-200;
+  }
+} 

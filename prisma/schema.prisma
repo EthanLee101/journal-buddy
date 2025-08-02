@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  entries       JournalEntry[]
+  moodEntries   MoodEntry[]
+  preferences   UserPreferences?
+  
+  @@map("users")
+}
+
+model JournalEntry {
+  id          String   @id @default(cuid())
+  title       String?
+  content     String
+  mood        Int      @default(5) // 1-10 scale
+  tags        String   @default("") // Comma-separated tags
+  isPrivate   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis    EntryAnalysis?
+  attachments EntryAttachment[]
+  
+  @@map("journal_entries")
+}
+
+model EntryAnalysis {
+  id              String @id @default(cuid())
+  sentiment       Float  // -1 to 1
+  emotions        String // JSON string
+  keywords        String // Comma-separated keywords
+  insights        String?
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  entryId         String @unique
+  entry           JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  
+  @@map("entry_analysis")
+}
+
+model MoodEntry {
+  id          String   @id @default(cuid())
+  mood        Int      // 1-10 scale
+  energy      Int?     // 1-10 scale
+  anxiety     Int?     // 1-10 scale
+  sleep       Int?     // Hours slept
+  notes       String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("mood_entries")
+}
+
+model EntryAttachment {
+  id        String @id @default(cuid())
+  filename  String
+  url       String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  entryId   String
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  
+  @@map("entry_attachments")
+}
+
+model UserPreferences {
+  id                    String  @id @default(cuid())
+  theme                 String  @default("system") // light, dark, system
+  reminderEnabled       Boolean @default(false)
+  reminderTime          String? // "18:00"
+  aiInsightsEnabled     Boolean @default(true)
+  exportFormat          String  @default("json") // json, csv, pdf
+  
+  // Relations
+  userId                String  @unique
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_preferences")
+} 
