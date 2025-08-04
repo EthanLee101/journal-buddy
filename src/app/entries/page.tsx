@@ -1,10 +1,38 @@
+'use client';
+
 import React from 'react';
+import { useSession } from 'next-auth/react';
 import { EntryCard } from '@/components/journal/EntryCard';
 import { BookOpen, Sparkles, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default function EntriesPage() {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-comic-blue"></div>
+          <p className="mt-2 text-cool-600">Loading your entries...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-comic-blue mb-4">
+            Please sign in to view your journal entries
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">

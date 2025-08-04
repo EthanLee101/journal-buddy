@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useSession } from 'next-auth/react';
 import { EntryForm } from '@/components/forms/EntryForm';
 import { MoodChart } from '@/components/charts/MoodChart';
 import { TrendingUp, Calendar, Heart, BookOpen, Sparkles, Target } from 'lucide-react';
@@ -18,12 +21,37 @@ const mockInsights = [
 ];
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-comic-blue"></div>
+          <p className="mt-2 text-cool-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-comic-blue mb-4">
+            Please sign in to access your dashboard
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Welcome Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-comic-blue mb-2">
-          Welcome Back to Your JournalBuddy!
+          Welcome Back, {session.user?.name?.split(' ')[0]}! 👋
         </h1>
         <p className="text-cool-600 text-lg">
           Ready to capture today&apos;s thoughts and feelings?

@@ -1,79 +1,88 @@
+// app/api/entries/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createEntrySchema } from '@/lib/validations/entry';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 
-// Mock data for demo purposes
-const mockEntries = [
-  {
-    id: '1',
-    title: 'Feeling Great Today!',
-    content: 'Had an amazing day with lots of positive energy. Feeling grateful for all the good things in my life.',
-    mood: 9,
-    tags: 'positive,gratitude,energy',
-    isPrivate: true,
-    userId: 'demo-user',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'Reflection Time',
-    content: 'Taking some time to reflect on my goals and what I want to achieve. Feeling motivated to make positive changes.',
-    mood: 7,
-    tags: 'reflection,goals,motivation',
-    isPrivate: true,
-    userId: 'demo-user',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
 export async function GET(request: NextRequest) {
-  // Demo mode - return mock data
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '10');
+  try {
+    const session = await getServerSession(authOptions);
 
-  return NextResponse.json({
-    data: mockEntries,
-    pagination: {
-      page,
-      limit,
-      total: mockEntries.length,
-      pages: Math.ceil(mockEntries.length / limit),
-    },
-  });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    const { data: entries, error } = await supabaseAdmin
+      .from('journal_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(skip, skip + limit - 1);
+
+    if (error) throw error;
+
+    const { count } = await supabaseAdmin
+      .from('journal_entries')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    return NextResponse.json({
+      data: entries,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        pages: Math.ceil((count || 0) / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching entries:', error);
+    return NextResponse.json({ error: 'Failed to fetch entries' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
-  // Demo mode - validate and return mock entry
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
     const body = await request.json();
     const validatedData = createEntrySchema.parse(body);
 
-    const newEntry = {
-      id: Date.now().toString(),
-      ...validatedData,
-      userId: 'demo-user',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const { data: entry, error } = await supabaseAdmin
+      .from('journal_entries')
+      .insert([{
+        title: validatedData.title,
+        content: validatedData.content,
+        mood: validatedData.mood,
+        tags: validatedData.tags?.join(',') || '',
+        is_private: validatedData.isPrivate ?? true,
+        user_id: userId,
+      }])
+      .select()
+      .single();
 
-    // Add to mock data (in real app, this would be saved to database)
-    mockEntries.unshift(newEntry);
+    if (error) throw error;
 
-    return NextResponse.json({ data: newEntry }, { status: 201 });
+    return NextResponse.json({ data: entry }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 });
     }
-    
-    return NextResponse.json(
-      { error: 'Failed to create entry' },
-      { status: 500 }
-    );
+
+    console.error('Error creating entry:', error);
+    return NextResponse.json({ error: 'Failed to create entry' }, { status: 500 });
   }
-} 
+}

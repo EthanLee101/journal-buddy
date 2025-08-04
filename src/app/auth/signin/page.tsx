@@ -2,27 +2,14 @@
 
 import React from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Brain, Sparkles } from 'lucide-react';
+import { Brain, Chrome } from 'lucide-react';
 
 export default function SignInPage() {
-  const router = useRouter();
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await signIn('credentials', {
-      username,
-      password,
-      redirect: false,
+  const handleGoogleSignIn = async () => {
+    await signIn('google', {
+      callbackUrl: '/dashboard',
     });
-
-    if (result?.ok) {
-      router.push('/dashboard');
-    }
   };
 
   return (
@@ -35,52 +22,25 @@ export default function SignInPage() {
             </div>
           </div>
           <h2 className="text-4xl font-bold text-comic-blue">
-            Welcome Back! 
+            Welcome to Your Mental Health Journal
           </h2>
           <p className="mt-2 text-cool-700 text-lg">
-            Ready to continue your journaling journey? ✨
+            Start your wellness journey with secure Google sign-in ✨
           </p>
         </div>
         
         <div className="comic-card p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-lg font-bold text-comic-blue mb-2">
-                Username
-              </label>
-              <Input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter any username"
-                className="comic-card border-2 border-cool-300 focus:border-comic-blue focus:ring-comic-blue text-base p-3"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-lg font-bold text-comic-blue mb-2">
-                Password
-              </label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter any password"
-                className="comic-card border-2 border-cool-300 focus:border-comic-blue focus:ring-comic-blue text-base p-3"
-                required
-              />
-            </div>
-            
-            <Button type="submit" className="comic-button w-full py-3 text-lg">
-              <Sparkles className="h-5 w-5 mr-2" />
-              Start Journaling!
-            </Button>
-          </form>
+          <Button 
+            onClick={handleGoogleSignIn}
+            className="comic-button w-full py-3 text-lg"
+          >
+            <Chrome className="h-5 w-5 mr-2" />
+            Continue with Google
+          </Button>
           
           <div className="mt-6 text-center bubble-card p-4">
             <p className="text-sm text-cool-700 font-medium">
-              🎯 Demo Mode: Enter any username and password to get started!
+              🔐 Secure authentication powered by Google OAuth
             </p>
           </div>
         </div>

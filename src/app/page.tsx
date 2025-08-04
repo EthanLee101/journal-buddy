@@ -1,9 +1,25 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useSession, signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Brain, Shield, Sparkles, BarChart3, Heart, BookOpen, Users, Star } from 'lucide-react';
+import { Brain, Shield, Sparkles, BarChart3, Heart, BookOpen, Users, Star, LogIn } from 'lucide-react';
 
 export default function HomePage() {
+  const { data: session, status, update } = useSession();
+
+  // Force session check on mount to fix hydration issues
+  useEffect(() => {
+    if (status === 'loading') {
+      update();
+    }
+  }, [status, update]);
+
+  const handleSignIn = () => {
+    signIn('google', { callbackUrl: '/dashboard' });
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -25,12 +41,30 @@ export default function HomePage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard">
-              <Button className="comic-button px-8 py-4 text-xl">
-                <Sparkles className="h-6 w-6 mr-2" />
+            {status === 'loading' ? (
+              <Button 
+                disabled
+                className="comic-button px-8 py-4 text-xl opacity-75"
+              >
+                <LogIn className="h-6 w-6 mr-2" />
+                Loading...
+              </Button>
+            ) : session ? (
+              <Link href="/dashboard">
+                <Button className="comic-button px-8 py-4 text-xl">
+                  <Sparkles className="h-6 w-6 mr-2" />
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button 
+                onClick={handleSignIn}
+                className="comic-button px-8 py-4 text-xl"
+              >
+                <LogIn className="h-6 w-6 mr-2" />
                 Start Journaling
               </Button>
-            </Link>
+            )}
             <Link href="/about">
               <Button 
                 variant="outline" 
@@ -131,14 +165,32 @@ export default function HomePage() {
           <p className="text-xl text-cool-700 mb-8">
             Begin your mental wellness adventure today - it&apos;s free to get started! 🚀
           </p>
-          <Link href="/dashboard">
-            <Button className="comic-button px-10 py-5 text-2xl">
-              <Sparkles className="h-6 w-6 mr-2" />
+          {status === 'loading' ? (
+            <Button 
+              disabled
+              className="comic-button px-10 py-5 text-2xl opacity-75"
+            >
+              <LogIn className="h-6 w-6 mr-2" />
+              Loading...
+            </Button>
+          ) : session ? (
+            <Link href="/dashboard">
+              <Button className="comic-button px-10 py-5 text-2xl">
+                <Sparkles className="h-6 w-6 mr-2" />
+                Go to Your Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Button 
+              onClick={handleSignIn}
+              className="comic-button px-10 py-5 text-2xl"
+            >
+              <LogIn className="h-6 w-6 mr-2" />
               Start Your First Entry
             </Button>
-          </Link>
+          )}
         </div>
       </div>
     </div>
   );
-} 
+}
