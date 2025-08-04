@@ -1,4 +1,4 @@
-# Mental Health Journal App
+# journal-buddy
 
 A private, secure journaling application with AI-powered insights and mood tracking. Built with Next.js 14, TypeScript, and modern web technologies.
 
