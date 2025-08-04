@@ -25,8 +25,7 @@ A private, secure journaling application with AI-powered insights and mood track
 
 ### Backend & Database
 - **Next.js API Routes** - Serverless functions, same repo
-- **Prisma ORM** - Type-safe database access, excellent TypeScript integration
-- **PostgreSQL** (Neon/Supabase) - Relational data, JSON support, scalable
+- **PostgreSQL** (Supabase) - Relational data, JSON support, scalable
 - **NextAuth.js v5** - Authentication with multiple providers
 - **Uploadthing** - File uploads for journal attachments
 
