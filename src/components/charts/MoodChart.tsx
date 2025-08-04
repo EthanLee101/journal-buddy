@@ -2,25 +2,67 @@
 
 import React from 'react';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 
-// Mock data for demonstration
-const mockMoodData = [
-  { date: 'Jan 01', mood: 6, energy: 5, anxiety: 4 },
-  { date: 'Jan 02', mood: 7, energy: 6, anxiety: 3 },
-  { date: 'Jan 03', mood: 5, energy: 4, anxiety: 6 },
-  { date: 'Jan 04', mood: 8, energy: 7, anxiety: 2 },
-  { date: 'Jan 05', mood: 7, energy: 6, anxiety: 3 },
-  { date: 'Jan 06', mood: 9, energy: 8, anxiety: 2 },
-  { date: 'Jan 07', mood: 8, energy: 7, anxiety: 3 },
-];
+// Fetch mood data
+const fetchMoodData = async () => {
+  const response = await fetch('/api/mood?days=14');
+  if (!response.ok) {
+    throw new Error('Failed to fetch mood data');
+  }
+  const data = await response.json();
+  return data.data || [];
+};
 
 export function MoodChart() {
+  const { data: moodEntries, isLoading, error } = useQuery({
+    queryKey: ['mood-chart'],
+    queryFn: fetchMoodData,
+  });
+
+  const chartData = useMemo(() => {
+    if (!moodEntries || moodEntries.length === 0) {
+      return [];
+    }
+
+    return moodEntries
+      .map((entry: any) => ({
+        date: format(new Date(entry.created_at), 'MMM dd'),
+        mood: entry.mood,
+        energy: entry.energy || 0,
+        anxiety: entry.anxiety || 0,
+      }))
+      .reverse() // Show oldest to newest
+      .slice(-7); // Show last 7 entries
+  }, [moodEntries]);
+
+  if (isLoading) {
+    return (
+      <div className="h-80 w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-comic-blue"></div>
+          <p className="mt-2 text-cool-600">Loading mood data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || chartData.length === 0) {
+    return (
+      <div className="h-80 w-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-cool-600 mb-4">No mood data available yet</p>
+          <p className="text-sm text-cool-500">Start tracking your mood to see trends!</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={mockMoodData}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E0F2FE" />
           <XAxis 
             dataKey="date" 

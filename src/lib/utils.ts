@@ -32,9 +32,9 @@ export function getMoodEmoji(mood: number): string {
 }
 
 export function getMoodColor(mood: number): string {
-  if (mood >= 8) return 'text-green-600'
-  if (mood >= 6) return 'text-blue-600'
-  if (mood >= 4) return 'text-yellow-600'
-  if (mood >= 2) return 'text-orange-600'
-  return 'text-red-600'
+  if (mood >= 8) return 'from-green-200 to-green-300 text-green-800'
+  if (mood >= 6) return 'from-blue-200 to-blue-300 text-blue-800'
+  if (mood >= 4) return 'from-yellow-200 to-yellow-300 text-yellow-800'
+  if (mood >= 2) return 'from-orange-200 to-orange-300 text-orange-800'
+  return 'from-red-200 to-red-300 text-red-800'
 } 
